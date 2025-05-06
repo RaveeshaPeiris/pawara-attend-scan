@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import AppHeader from "@/components/AppHeader";
 import { ScanQrCode, ArrowLeft, Check } from "lucide-react";
+import QRScanner from "@/components/QRScanner";
 import {
   getClassById,
   getStudentByQR,
@@ -58,55 +59,50 @@ const QRScanPage: React.FC = () => {
 
   const handleStartScan = () => {
     setIsScanning(true);
-    simulateScan();
+  };
+  
+  const handleCancelScan = () => {
+    setIsScanning(false);
   };
 
-  // Simulate QR code scanning for demo purposes
-  const simulateScan = () => {
-    // In a real app, this would activate the device camera and scan a QR code
-    setTimeout(async () => {
-      try {
-        // Simulate scanning a random student QR code
-        const qrCodes = ["REG001", "REG002", "REG003", "REG004", "REG005"];
-        const randomQR = qrCodes[Math.floor(Math.random() * qrCodes.length)];
+  const handleQRScanned = async (qrCode: string) => {
+    try {
+      const student = await getStudentByQR(qrCode);
+      
+      if (student && student.classId === classId) {
+        setScannedStudent(student);
+        setScanResult("success");
         
-        const student = await getStudentByQR(randomQR);
+        // Mark attendance
+        const today = new Date().toISOString().split("T")[0];
+        const currentWeek = Math.ceil(new Date().getDate() / 7) as 1 | 2 | 3 | 4;
         
-        if (student && student.classId === classId) {
-          setScannedStudent(student);
-          setScanResult("success");
-          
-          // Mark attendance
-          const today = new Date().toISOString().split("T")[0];
-          const currentWeek = Math.ceil(new Date().getDate() / 7) as 1 | 2 | 3 | 4;
-          
-          await markAttendance(student.id, classId!, today, currentWeek);
-          
-          toast({
-            title: "Attendance Marked",
-            description: `${student.name} is now marked present`,
-            variant: "default",
-          });
-        } else {
-          setScanResult("error");
-          toast({
-            title: "Invalid QR Code",
-            description: "Student not found in this class",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error("Scan error:", error);
+        await markAttendance(student.id, classId!, today, currentWeek);
+        
+        toast({
+          title: "Attendance Marked",
+          description: `${student.name} is now marked present`,
+          variant: "default",
+        });
+      } else {
         setScanResult("error");
         toast({
-          title: "Scan Failed",
-          description: "Failed to process QR code",
+          title: "Invalid QR Code",
+          description: "Student not found in this class",
           variant: "destructive",
         });
-      } finally {
-        setIsScanning(false);
       }
-    }, 2000);
+    } catch (error) {
+      console.error("Scan error:", error);
+      setScanResult("error");
+      toast({
+        title: "Scan Failed",
+        description: "Failed to process QR code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const resetScan = () => {
@@ -138,7 +134,12 @@ const QRScanPage: React.FC = () => {
         </div>
         
         <div className="card-container max-w-md mx-auto text-center">
-          {scanResult === "success" && scannedStudent ? (
+          {isScanning ? (
+            <QRScanner 
+              onCodeScanned={handleQRScanned}
+              onCancel={handleCancelScan}
+            />
+          ) : scanResult === "success" && scannedStudent ? (
             <div className="py-6">
               <div className="bg-success/20 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
                 <Check className="h-10 w-10 text-success" />
@@ -168,23 +169,13 @@ const QRScanPage: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold mb-2">Scan Student QR Code</h3>
               <p className="text-muted-foreground mb-6">
-                Position the QR code within the camera frame to mark attendance
+                Tap the button below to start scanning a student QR code
               </p>
               
-              {isScanning ? (
-                <div className="relative w-64 h-64 mx-auto border-2 border-primary rounded-lg overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-primary opacity-75"></div>
-                    <div className="relative rounded-full h-2 w-2 bg-primary"></div>
-                  </div>
-                  <div className="animate-scan absolute h-1 w-full bg-primary/50"></div>
-                </div>
-              ) : (
-                <Button onClick={handleStartScan} className="mx-auto">
-                  <ScanQrCode className="mr-2 h-4 w-4" />
-                  Start Scanning
-                </Button>
-              )}
+              <Button onClick={handleStartScan} className="mx-auto">
+                <ScanQrCode className="mr-2 h-4 w-4" />
+                Start Scanning
+              </Button>
             </div>
           )}
         </div>
