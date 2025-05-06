@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScanQrCode, Camera, X } from "lucide-react";
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface QRScannerProps {
   onCodeScanned: (code: string) => void;
@@ -18,6 +19,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
     const checkPermissions = async () => {
       try {
         const { camera } = await BarcodeScanner.checkPermissions();
+        console.log("Camera permission status:", camera);
         setHasPermission(camera === 'granted');
       } catch (error) {
         console.error('Error checking camera permissions:', error);
@@ -30,16 +32,24 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
 
   const requestPermissions = async () => {
     try {
+      console.log("Requesting camera permissions...");
       const { camera } = await BarcodeScanner.requestPermissions();
+      console.log("Camera permission after request:", camera);
       setHasPermission(camera === 'granted');
+      
+      // If permission was granted, automatically start scan
+      if (camera === 'granted') {
+        setTimeout(() => startScan(), 500);
+      }
     } catch (error) {
       console.error('Error requesting permissions:', error);
-      setError('Error requesting camera permissions');
+      setError('Error requesting camera permissions. Please enable camera access in your device settings.');
     }
   };
 
   const startScan = async () => {
-    if (!hasPermission) {
+    if (hasPermission !== true) {
+      requestPermissions();
       return;
     }
 
@@ -47,15 +57,20 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
     setError(null);
 
     try {
+      console.log("Starting barcode scan...");
       const { barcodes } = await BarcodeScanner.scan();
+      console.log("Scan complete, barcodes:", barcodes);
+      
       if (barcodes.length > 0) {
         onCodeScanned(barcodes[0].rawValue);
       }
     } catch (error: any) {
       // If user closed the scanner
-      if (error.message !== 'User cancelled the scan process.') {
+      if (error.message === 'User cancelled the scan process.') {
+        console.log("User cancelled scan");
+      } else {
         console.error('Scan error:', error);
-        setError('Failed to scan QR code');
+        setError('Failed to scan QR code. Please try again.');
       }
     } finally {
       setScanning(false);
@@ -69,6 +84,10 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
         <Button onClick={requestPermissions}>
           Grant Camera Permission
         </Button>
+        <Button variant="ghost" onClick={onCancel} className="mt-2">
+          <X className="mr-2 h-4 w-4" />
+          Cancel
+        </Button>
       </div>
     );
   }
@@ -76,10 +95,13 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
   if (hasPermission === false) {
     return (
       <div className="p-4 text-center">
-        <p className="text-destructive mb-2">Camera permission denied</p>
-        <p className="mb-4">Please enable camera permissions in your device settings to scan QR codes</p>
-        <Button onClick={requestPermissions} variant="outline" className="mr-2">
-          Request Again
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>
+            Camera permission denied. Please enable camera access in your device settings to scan QR codes.
+          </AlertDescription>
+        </Alert>
+        <Button onClick={requestPermissions} variant="outline" className="mr-2 mb-2">
+          Request Permission Again
         </Button>
         <Button onClick={onCancel}>
           Cancel
@@ -91,9 +113,9 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
   return (
     <div className="p-4 text-center">
       {error && (
-        <div className="bg-destructive/10 p-3 rounded-md mb-4 text-destructive">
-          {error}
-        </div>
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {!scanning ? (
