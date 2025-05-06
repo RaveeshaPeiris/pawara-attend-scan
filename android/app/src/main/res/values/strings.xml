@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">pawara-attend-scan</string>
+    <string name="title_activity_main">pawara-attend-scan</string>
+    <string name="package_name">app.lovable.c9fcadfffcc64ee28fdd9412b79b66b5</string>
+    <string name="custom_url_scheme">app.lovable.c9fcadfffcc64ee28fdd9412b79b66b5</string>
+</resources>
