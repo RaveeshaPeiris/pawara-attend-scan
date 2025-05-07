@@ -1,7 +1,7 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
+// Define the user interface
 interface User {
   id: string;
   email: string;
@@ -9,6 +9,7 @@ interface User {
   role: "teacher" | "admin";
 }
 
+// Define the context shape
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -17,14 +18,16 @@ interface AuthContextType {
   logout: () => void;
 }
 
+// Create the context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// AuthProvider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Check for saved user on mount
+  // Check if user info exists in localStorage when the app starts
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
@@ -38,60 +41,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
+  // Login function that communicates with the backend
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
+
     try {
-      // In a real app, you would connect to your MERN backend here
-      // For demo purposes, we'll simulate a successful login with mock data
-      
-      // Example validation (replace with actual API call)
-      if (!email || !password) {
+      const response = await fetch("http://localhost:5001/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
         toast({
           title: "Login Failed",
-          description: "Email and password are required",
+          description: data.message || "Invalid credentials",
           variant: "destructive",
         });
         return false;
       }
 
-      // Mock login for demo
-      if (email === "teacher@pawara.com" && password === "password") {
-        const userData: User = {
-          id: "t123",
-          email: "teacher@pawara.com",
-          name: "John Teacher",
-          role: "teacher",
-        };
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${userData.name}!`,
-        });
-        return true;
-      } else if (email === "admin@pawara.com" && password === "password") {
-        const userData: User = {
-          id: "a123",
-          email: "admin@pawara.com",
-          name: "Admin User",
-          role: "admin",
-        };
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${userData.name}!`,
-        });
-        return true;
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password",
-          variant: "destructive",
-        });
-        return false;
-      }
+      const userData: User = {
+        id: data.id,
+        email: email,
+        name: data.name,
+        role: data.role,
+      };
+
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${userData.name}!`,
+      });
+
+      return true;
     } catch (error) {
       console.error("Login error:", error);
       toast({
@@ -105,6 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Logout function
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
@@ -129,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// Hook to use authentication context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
