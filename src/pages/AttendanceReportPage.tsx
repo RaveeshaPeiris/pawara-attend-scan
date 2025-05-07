@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +13,7 @@ import {
   Class,
   Student,
   AttendanceRecord,
-} from "@/services/mockData";
+} from "@/services/attendanceService";
 
 interface StudentAttendance {
   student: Student;

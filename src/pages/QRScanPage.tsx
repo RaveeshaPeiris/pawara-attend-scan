@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,7 +12,7 @@ import {
   markAttendance,
   Class,
   Student,
-} from "@/services/mockData";
+} from "@/services/attendanceService";
 
 const QRScanPage: React.FC = () => {
   const { classId } = useParams<{ classId: string }>();

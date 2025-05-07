@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import AppHeader from "@/components/AppHeader";
 import ClassCard from "@/components/ClassCard";
 import { Calendar, List } from "lucide-react";
-import { getClasses, Class } from "@/services/mockData";
+import { getClasses, Class } from "@/services/attendanceService";
 
 const ClassesPage: React.FC = () => {
   const [classes, setClasses] = useState<Class[]>([]);
