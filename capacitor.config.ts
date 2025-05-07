@@ -6,14 +6,19 @@ const config: CapacitorConfig = {
   appName: 'pawara-attend-scan',
   webDir: 'dist',
   server: {
-    url: "https://c9fcadff-fcc6-4ee2-8fdd-9412b79b66b5.lovableproject.com?forceHideBadge=true",
-    cleartext: true
+    androidScheme: 'https',
+    cleartext: true,
+    allowNavigation: ['*'],
+    errorPath: 'error.html'
   },
   plugins: {
     CapacitorMlkitBarcodeScanning: {
       cameraPermissionRequestTitle: "Camera Permission", 
       cameraPermissionRequestText: "This app needs camera access to scan QR codes"
     }
+  },
+  android: {
+    allowMixedContent: true
   }
 };
 
