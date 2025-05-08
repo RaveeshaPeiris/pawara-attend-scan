@@ -188,7 +188,7 @@ export interface Student {
   id: string;
   name: string;
   regNumber: string;
-  //classId: string;
+  classId: string;
  classIds?: string[];
   qrCode: string;
 }
@@ -202,7 +202,7 @@ export interface AttendanceRecord {
   classId: string;
 }
 
-const baseUrl = "http://192.168.8.101:5001/api"; // Update this if your backend IP changes
+const baseUrl = "http://192.168.8.100:5001/api"; // Update this if your backend IP changes
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");

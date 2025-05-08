@@ -200,9 +200,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (email === "admin@gmail.com" && password === "admin") {
         actualEmail = "institute.pawara@gmail.com";
         actualPassword = "pawara12";
-        url = "http://192.168.8.101:5001/api/institute/login";
+        url = "http://192.168.8.100:5001/api/institute/login";
       } else {
-        url = "http://192.168.8.101:5001/api/teacher/login";
+        url = "http://192.168.8.100:5001/api/teacher/login";
       }
 
       const response = await fetch(url, {

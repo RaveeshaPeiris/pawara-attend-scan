@@ -152,10 +152,11 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
 };
 
 export default QRScanner;*/
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScanQrCode, Camera, X } from "lucide-react";
-import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
+import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface QRScannerProps {
@@ -172,11 +173,11 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
     const checkPermissions = async () => {
       try {
         const { camera } = await BarcodeScanner.checkPermissions();
-        console.log("Camera permission status:", camera);
         setHasPermission(camera === 'granted');
+        console.log("Camera permission status:", camera);
       } catch (error) {
-        console.error('Error checking camera permissions:', error);
-        setError('Error checking camera permissions');
+        console.error("Error checking camera permissions:", error);
+        setError("Error checking camera permissions.");
       }
     };
 
@@ -185,23 +186,21 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
 
   const requestPermissions = async () => {
     try {
-      console.log("Requesting camera permissions...");
       const { camera } = await BarcodeScanner.requestPermissions();
-      console.log("Camera permission after request:", camera);
       setHasPermission(camera === 'granted');
+      console.log("Camera permission after request:", camera);
 
       if (camera === 'granted') {
-        setTimeout(() => startScan(), 500);
+        setTimeout(() => startScan(), 300);
       }
     } catch (error) {
-      console.error('Error requesting permissions:', error);
-      setError('Error requesting camera permissions. Please enable camera access in your device settings.');
+      console.error("Error requesting permissions:", error);
+      setError("Camera permission denied. Please enable camera access in settings.");
     }
   };
 
   const startScan = async () => {
-    const { camera } = await BarcodeScanner.checkPermissions();
-    if (camera !== 'granted') {
+    if (hasPermission !== true) {
       await requestPermissions();
       return;
     }
@@ -212,19 +211,20 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
     try {
       console.log("Starting barcode scan...");
       const { barcodes } = await BarcodeScanner.scan();
-      console.log("Scan complete, barcodes:", barcodes);
 
-      if (barcodes.length > 0 && barcodes[0]?.rawValue) {
+      console.log("Scan result:", barcodes);
+
+      if (barcodes.length > 0) {
         onCodeScanned(barcodes[0].rawValue);
       } else {
-        throw new Error("QR code not recognized");
+        setError("No QR code detected. Please try again.");
       }
     } catch (error: any) {
       if (error.message === 'User cancelled the scan process.') {
         console.log("User cancelled scan");
       } else {
-        console.error('Scan error:', error);
-        setError('Failed to scan QR code. Please try again.');
+        console.error("Scan error:", error);
+        setError("Failed to scan QR code. Please try again.");
       }
     } finally {
       setScanning(false);
@@ -235,12 +235,9 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
     return (
       <div className="p-4 text-center">
         <p className="mb-4">Camera permission is required to scan QR codes</p>
-        <Button onClick={requestPermissions}>
-          Grant Camera Permission
-        </Button>
+        <Button onClick={requestPermissions}>Grant Camera Permission</Button>
         <Button variant="ghost" onClick={onCancel} className="mt-2">
-          <X className="mr-2 h-4 w-4" />
-          Cancel
+          <X className="mr-2 h-4 w-4" /> Cancel
         </Button>
       </div>
     );
@@ -257,9 +254,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
         <Button onClick={requestPermissions} variant="outline" className="mr-2 mb-2">
           Request Permission Again
         </Button>
-        <Button onClick={onCancel}>
-          Cancel
-        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </div>
     );
   }
@@ -306,4 +301,3 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
 };
 
 export default QRScanner;
-
