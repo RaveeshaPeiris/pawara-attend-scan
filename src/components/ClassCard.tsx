@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 interface ClassCardProps {
   id: string;
   name: string;
-  grade: string;
+  grade: number;
   studentCount: number;
 }
 

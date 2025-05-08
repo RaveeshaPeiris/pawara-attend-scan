@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import AppHeader from "@/components/AppHeader";
 import { ScanQrCode, ArrowLeft, Check } from "lucide-react";
+//import { Html5QrcodeScanner } from "html5-qrcode";
 import QRScanner from "@/components/QRScanner";
 import {
   getClassById,
@@ -68,7 +69,9 @@ const QRScanPage: React.FC = () => {
     try {
       const student = await getStudentByQR(qrCode);
       
-      if (student && student.classId === classId) {
+      //if (student && student.classId === classId) 
+      if (student && student.classIds?.includes(classId!))
+        {
         setScannedStudent(student);
         setScanResult("success");
         
