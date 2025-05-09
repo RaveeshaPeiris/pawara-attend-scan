@@ -156,7 +156,7 @@ export default QRScanner;*/
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScanQrCode, Camera, X } from "lucide-react";
-import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface QRScannerProps {
@@ -172,12 +172,19 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
   useEffect(() => {
     const checkPermissions = async () => {
       try {
+        const isAvailable = await BarcodeScanner.isSupported();
+        
+        if (!isAvailable) {
+          setError("Barcode scanner is not supported on this device");
+          return;
+        }
+        
         const { camera } = await BarcodeScanner.checkPermissions();
         setHasPermission(camera === 'granted');
         console.log("Camera permission status:", camera);
       } catch (error) {
-        console.error("Error checking camera permissions:", error);
-        setError("Error checking camera permissions.");
+        console.error("Error checking permissions:", error);
+        setError("Error checking camera permissions");
       }
     };
 
@@ -189,13 +196,9 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
       const { camera } = await BarcodeScanner.requestPermissions();
       setHasPermission(camera === 'granted');
       console.log("Camera permission after request:", camera);
-
-      if (camera === 'granted') {
-        setTimeout(() => startScan(), 300);
-      }
     } catch (error) {
       console.error("Error requesting permissions:", error);
-      setError("Camera permission denied. Please enable camera access in settings.");
+      setError("Camera permission denied");
     }
   };
 
@@ -209,28 +212,32 @@ const QRScanner: React.FC<QRScannerProps> = ({ onCodeScanned, onCancel }) => {
     setError(null);
 
     try {
+      console.log("Checking for Google Barcode Scanner module...");
+      
+      // Add the module installation check
+      if (!(await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable())) {
+        console.log("Installing Google Barcode Scanner module...");
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+      }
+
       console.log("Starting barcode scan...");
-      const { barcodes } = await BarcodeScanner.scan();
-
-      console.log("Scan result:", barcodes);
-
-      if (barcodes.length > 0) {
-        onCodeScanned(barcodes[0].rawValue);
+      const result = await BarcodeScanner.scan();
+      console.log("Scan result:", result);
+      
+      if (result && result.barcodes && result.barcodes.length > 0) {
+        onCodeScanned(result.barcodes[0].rawValue);
       } else {
-        setError("No QR code detected. Please try again.");
+        setError("No QR code detected");
       }
     } catch (error: any) {
-      if (error.message === 'User cancelled the scan process.') {
-        console.log("User cancelled scan");
-      } else {
-        console.error("Scan error:", error);
-        setError("Failed to scan QR code. Please try again.");
-      }
+      console.error("Scan error:", error);
+      setError("Failed to scan QR code: " + (error.message || "Unknown error"));
     } finally {
       setScanning(false);
     }
   };
 
+  // Rest of your component remains exactly the same
   if (hasPermission === null) {
     return (
       <div className="p-4 text-center">

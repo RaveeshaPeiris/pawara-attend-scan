@@ -7,6 +7,6 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // ❌ DO NOT register BarcodeScannerPlugin manually
+        // ❌DO NOT register BarcodeScannerPlugin manually
     }
 }
