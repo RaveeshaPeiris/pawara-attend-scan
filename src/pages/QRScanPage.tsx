@@ -66,46 +66,50 @@ const QRScanPage: React.FC = () => {
   };
 
   const handleQRScanned = async (qrCode: string) => {
-    try {
-      const student = await getStudentByQR(qrCode);
-      
-      //if (student && student.classId === classId) 
-      if (student && student.classIds?.includes(classId!))
-        {
-        setScannedStudent(student);
-        setScanResult("success");
-        
-        // Mark attendance
-        const today = new Date().toISOString().split("T")[0];
-        const currentWeek = Math.ceil(new Date().getDate() / 7) as 1 | 2 | 3 | 4;
-        
-        await markAttendance(student.id, classId!, today, currentWeek);
-        
-        toast({
-          title: "Attendance Marked",
-          description: `${student.name} is now marked present`,
-          variant: "default",
-        });
-      } else {
-        setScanResult("error");
-        toast({
-          title: "Invalid QR Code",
-          description: "Student not found in this class",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Scan error:", error);
+  console.log("📦 Scanned QR code:", qrCode);
+
+  try {
+    const student = await getStudentByQR(qrCode);
+    console.log("✅ Student fetched from DB:", student);
+
+    if (student && student.classIds?.includes(classId)) {
+      // Success
+      console.log("🎯 Student belongs to this class");
+
+      const today = new Date().toISOString().split("T")[0];
+      const currentWeek = Math.ceil(new Date().getDate() / 7) as 1 | 2 | 3 | 4;
+
+      await markAttendance(student.id, classId!, today, currentWeek,true);
+      setScannedStudent(student);
+      setScanResult("success");
+
+      toast({
+        title: "Attendance Marked",
+        description: `${student.name} marked present`,
+        variant: "default",
+      });
+    } else {
+      console.warn(" Student not found in this class");
       setScanResult("error");
       toast({
-        title: "Scan Failed",
-        description: "Failed to process QR code",
+        title: "Invalid QR Code",
+        description: "Student not found in this class",
         variant: "destructive",
       });
-    } finally {
-      setIsScanning(false);
     }
-  };
+  } catch (error) {
+    console.error("💥 Error processing QR code:", error);
+    setScanResult("error");
+    toast({
+      title: "Scan Failed",
+      description: "Failed to process QR code",
+      variant: "destructive",
+    });
+  } finally {
+    setIsScanning(false);
+  }
+};
+
 
   const resetScan = () => {
     setScannedStudent(null);

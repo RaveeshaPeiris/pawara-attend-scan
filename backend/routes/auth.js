@@ -7,7 +7,7 @@ const Teacher = require('../models/Teacher');
 // Hardcoded admin
 const ADMIN = {
   email: 'admin@gmail.com',
-  password: 'admin123' // You can hash this too if needed
+  password: 'admin123' 
 };
 
 // Login only
