@@ -3,7 +3,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 
-const MONGODB_URI = Deno.env.get("MONGODB_URI")!;
+const MONGODB_URI = Deno.env.get("mongodb+srv://tharushivithanage4:lN9ovW3FQjroDqCV@pawara.6b61t.mongodb.net/")!;
 
 // CORS headers for browser requests
 const corsHeaders = {

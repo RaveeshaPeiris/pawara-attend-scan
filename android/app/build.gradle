@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     namespace "app.lovable.c9fcadfffcc64ee28fdd9412b79b66b5"
     compileSdk rootProject.ext.compileSdkVersion
+
     defaultConfig {
         applicationId "app.lovable.c9fcadfffcc64ee28fdd9412b79b66b5"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -16,6 +17,11 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     buildTypes {
         release {
             minifyEnabled false
